@@ -6,12 +6,29 @@
 #include <variant>
 #include <vector>
 
-enum class TokenType { VARIABLE, NUMBER, PLUS, MINUS, STAR, FSLASH, LPAREN, RPAREN, EQUAL, END_OF_FILE };
-enum class BinaryOp : int {
+enum class TokenType {
+    VARIABLE,
+    NUMBER,
+    PLUS,
+    MINUS,
+    STAR,
+    CARET,
+    FSLASH,
+    LPAREN,
+    RPAREN,
+    EQUAL,
+    END_OF_FILE
+};
+enum class BinaryOp {
     Add = TokenType::PLUS,
     Sub = TokenType::MINUS,
     Mul = TokenType::STAR,
     Div = TokenType::FSLASH,
+    Pow = TokenType::CARET,
+};
+enum class UnaryOp {
+    Add = TokenType::PLUS,
+    Sub = TokenType::MINUS,
 };
 
 struct AdditiveExpression;
@@ -22,10 +39,18 @@ struct Primary {
     explicit Primary(AdditiveExpression* e) : Value(e) {}
     std::variant<double, char, AdditiveExpression*> Value;
 };
+struct UnaryExpression {
+    
+};
+struct PowerExpression {
+    explicit PowerExpression(Primary* p, PowerExpression* e = nullptr) : Base(p), Exponent(e) {}
+    Primary* Base;
+    PowerExpression* Exponent;
+};
 struct MultiplicativeExpression {
-    explicit MultiplicativeExpression(Primary* e) : Left(e) {}
-    Primary* Left;
-    std::vector<std::pair<BinaryOp, Primary*>> Right;
+    explicit MultiplicativeExpression(PowerExpression* e) : Left(e) {}
+    PowerExpression* Left;
+    std::vector<std::pair<BinaryOp, PowerExpression*>> Right;
 };
 struct AdditiveExpression {
     explicit AdditiveExpression(MultiplicativeExpression* e) : Left(e) {}
@@ -56,6 +81,7 @@ class Parser {
 
   private:
     Primary* ParsePrimary();
+    PowerExpression* ParsePowerExpression();
     MultiplicativeExpression* ParseMultiplicativeExpression();
     AdditiveExpression* ParseAdditiveExpression();
 

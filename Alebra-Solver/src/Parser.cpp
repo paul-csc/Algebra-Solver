@@ -48,6 +48,7 @@ std::vector<Token> Tokenize(std::string_view src) {
             case '-': tokens.emplace_back(TokenType::MINUS); break;
             case '*': tokens.emplace_back(TokenType::STAR); break;
             case '/': tokens.emplace_back(TokenType::FSLASH); break;
+            case '^': tokens.emplace_back(TokenType::CARET); break;
             case '(': tokens.emplace_back(TokenType::LPAREN); break;
             case ')': tokens.emplace_back(TokenType::RPAREN); break;
             case '=': tokens.emplace_back(TokenType::EQUAL); break;
@@ -85,7 +86,7 @@ Primary* Parser::ParsePrimary() {
         } else if (m_Variable == var) {
             return m_Allocator.alloc<Primary>(var);
         } else {
-            Error("More than 1 variable");        
+            Error("More than 1 variable");
         }
     } else if (Match(TokenType::LPAREN)) {
         Consume();
@@ -98,8 +99,20 @@ Primary* Parser::ParsePrimary() {
     return nullptr; // never reached
 }
 
+PowerExpression* Parser::ParsePowerExpression() {
+    Primary* base = ParsePrimary();
+
+    if (Match(TokenType::CARET)) {
+        Consume();
+        PowerExpression* exponent = ParsePowerExpression();
+        return m_Allocator.alloc<PowerExpression>(base, exponent);
+    }
+
+    return m_Allocator.alloc<PowerExpression>(base);
+}
+
 MultiplicativeExpression* Parser::ParseMultiplicativeExpression() {
-    Primary* left = ParsePrimary();
+    PowerExpression* left = ParsePowerExpression();
     MultiplicativeExpression* expr = m_Allocator.alloc<MultiplicativeExpression>(left);
 
     while (Match(
@@ -110,7 +123,7 @@ MultiplicativeExpression* Parser::ParseMultiplicativeExpression() {
         } else {
             op = BinaryOp::Mul;
         }
-        Primary* right = ParsePrimary();
+        PowerExpression* right = ParsePowerExpression();
         expr->Right.emplace_back(op, right);
     }
 
@@ -122,8 +135,7 @@ AdditiveExpression* Parser::ParseAdditiveExpression() {
     AdditiveExpression* expr = m_Allocator.alloc<AdditiveExpression>(left);
 
     while (Match(TokenType::PLUS, TokenType::MINUS)) {
-        auto t = Consume();
-        BinaryOp op = static_cast<BinaryOp>(t.Type);
+        BinaryOp op = static_cast<BinaryOp>(Consume().Type);
         MultiplicativeExpression* right = ParseMultiplicativeExpression();
         expr->Right.emplace_back(op, right);
     }
