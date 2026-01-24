@@ -1,23 +1,11 @@
 #pragma once
 
+#include "Tokenizer.h"
 #include "Utils.h"
 #include <string>
 #include <variant>
 #include <vector>
 
-enum class TokenType {
-    VARIABLE,
-    NUMBER,
-    PLUS,
-    MINUS,
-    STAR,
-    CARET,
-    FSLASH,
-    LPAREN,
-    RPAREN,
-    EQUAL,
-    END_OF_FILE
-};
 enum class BinaryOp {
     Add = TokenType::PLUS,
     Sub = TokenType::MINUS,
@@ -25,18 +13,15 @@ enum class BinaryOp {
     Div = TokenType::FSLASH,
     Pow = TokenType::CARET,
 };
-enum class UnaryOp {
-    None = -1,
-    Neg = TokenType::MINUS
-};
+enum class UnaryOp { None = -1, Neg = TokenType::MINUS };
 
 struct AdditiveExpression;
 
 struct Primary {
     explicit Primary(double d) : Value(d) {}
-    explicit Primary(char c) : Value(c) {}
+    explicit Primary(const std::string& s) : Value(s) {}
     explicit Primary(AdditiveExpression* e) : Value(e) {}
-    std::variant<double, char, AdditiveExpression*> Value;
+    std::variant<double, std::string, AdditiveExpression*> Value;
 };
 struct UnaryExpression {
     UnaryExpression(UnaryOp o, Primary* p) : Op(o), Expr(p) {}
@@ -64,17 +49,6 @@ struct Equation {
     AdditiveExpression* Lhs;
     AdditiveExpression* Rhs;
 };
-
-struct Token {
-    Token(double num) : Type(TokenType::NUMBER), Value(num) {}
-    Token(char var) : Type(TokenType::VARIABLE), Value(var) {}
-    Token(TokenType type) : Type(type), Value(std::monostate{}) {}
-
-    TokenType Type;
-    std::variant<std::monostate, double, char> Value;
-};
-
-std::vector<Token> Tokenize(std::string_view src);
 
 class Parser {
   public:
@@ -109,5 +83,5 @@ class Parser {
     size_t m_Index;
     ArenaAllocator m_Allocator;
 
-    char m_Variable;
+    std::string m_Variable;
 };

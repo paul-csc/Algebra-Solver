@@ -12,7 +12,7 @@ ArenaAllocator::~ArenaAllocator() {
 }
 
 [[noreturn]] void Error(const std::string& msg) {
-    std::cerr << msg << "\n";
+    std::cerr << "Error: " << msg << "\n";
     std::cin.get();
     std::exit(1);
 }

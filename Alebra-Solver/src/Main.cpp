@@ -1,12 +1,19 @@
-#include "Parser.h"
 #include "Solver.h"
 #include <iostream>
 
 int main() {
-    const std::string_view equation = "y = --1";
+    const std::string_view equation = "x = -2x + 1";
+    const auto solutions = Solve(equation);
 
-    double result = Solve(equation);
-    std::cout << "Result: " << result << '\n';
+    if (solutions.IsNone) {
+        std::cout << "No solution\n";
+    } else if (solutions.IsInfinite) {
+        std::cout << "Infinite solutions\n";
+    } else {
+        for (double solution : solutions.Values) {
+            std::cout << solution << "\n";
+        }
+    }
 
     std::cin.get();
     return 0;
