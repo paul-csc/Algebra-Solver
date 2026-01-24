@@ -99,8 +99,20 @@ Primary* Parser::ParsePrimary() {
     return nullptr; // never reached
 }
 
+UnaryExpression* Parser::ParseUnaryExpression() {
+    if (Match(TokenType::PLUS)) {
+        Consume();
+        return ParseUnaryExpression(); // unary + does nothing
+    } else if (Match(TokenType::MINUS)) {
+        Consume();
+        return m_Allocator.alloc<UnaryExpression>(UnaryOp::Neg, ParseUnaryExpression());
+    }
+
+    return m_Allocator.alloc<UnaryExpression>(UnaryOp::None, ParsePrimary());
+}
+
 PowerExpression* Parser::ParsePowerExpression() {
-    Primary* base = ParsePrimary();
+    UnaryExpression* base = ParseUnaryExpression();
 
     if (Match(TokenType::CARET)) {
         Consume();

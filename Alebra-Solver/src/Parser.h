@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Utils.h"
-#include <optional>
 #include <string>
 #include <variant>
 #include <vector>
@@ -27,8 +26,8 @@ enum class BinaryOp {
     Pow = TokenType::CARET,
 };
 enum class UnaryOp {
-    Add = TokenType::PLUS,
-    Sub = TokenType::MINUS,
+    None = -1,
+    Neg = TokenType::MINUS
 };
 
 struct AdditiveExpression;
@@ -40,11 +39,14 @@ struct Primary {
     std::variant<double, char, AdditiveExpression*> Value;
 };
 struct UnaryExpression {
-    
+    UnaryExpression(UnaryOp o, Primary* p) : Op(o), Expr(p) {}
+    UnaryExpression(UnaryOp o, UnaryExpression* u) : Op(o), Expr(u) {}
+    UnaryOp Op;
+    std::variant<Primary*, UnaryExpression*> Expr;
 };
 struct PowerExpression {
-    explicit PowerExpression(Primary* p, PowerExpression* e = nullptr) : Base(p), Exponent(e) {}
-    Primary* Base;
+    explicit PowerExpression(UnaryExpression* u, PowerExpression* e = nullptr) : Base(u), Exponent(e) {}
+    UnaryExpression* Base;
     PowerExpression* Exponent;
 };
 struct MultiplicativeExpression {
@@ -81,6 +83,7 @@ class Parser {
 
   private:
     Primary* ParsePrimary();
+    UnaryExpression* ParseUnaryExpression();
     PowerExpression* ParsePowerExpression();
     MultiplicativeExpression* ParseMultiplicativeExpression();
     AdditiveExpression* ParseAdditiveExpression();

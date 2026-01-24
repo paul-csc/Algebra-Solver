@@ -9,9 +9,24 @@ static LinearForm AnalyzeAdditive(AdditiveExpression* expr);
 static LinearForm AnalyzePrimary(Primary* prim) {
     LinearForm result;
     std::visit(
-        overloaded{ [&](double value) { result = { 0.0, value }; }, [&](char c) { result = { 1.0, 0.0 }; },
+        Overloaded{ [&](double value) { result = { 0.0, value }; }, [&](char c) { result = { 1.0, 0.0 }; },
             [&](AdditiveExpression* expr) { result = AnalyzeAdditive(expr); } },
         prim->Value);
+    return result;
+}
+
+static LinearForm AnalyzeUnary(UnaryExpression* expr) {
+    LinearForm result;
+
+    std::visit(Overloaded{ [&](Primary* prim) { result = AnalyzePrimary(prim); },
+                   [&](UnaryExpression* inner) { result = AnalyzeUnary(inner); } },
+        expr->Expr);
+
+    if (expr->Op == UnaryOp::Neg) {
+        result.Coefficient *= -1;
+        result.Constant *= -1;
+    }
+
     return result;
 }
 
@@ -28,7 +43,7 @@ static LinearForm AnalyzePower(PowerExpression* expr) {
         exponentValue = exp.Constant;
     }
 
-    LinearForm base = AnalyzePrimary(expr->Base);
+    LinearForm base = AnalyzeUnary(expr->Base);
 
     if (!expr->Exponent) {
         return base;
@@ -59,7 +74,7 @@ static LinearForm AnalyzeMultiplicative(MultiplicativeExpression* expr) {
             }
         } else if (op == BinaryOp::Div) {
             if (rhsResult.Coefficient != 0) {
-                Error("Division by expression containing x");
+                Error("Division by variable expression");
             } else if (rhsResult.Constant == 0) {
                 Error("Division by zero");
             } else {

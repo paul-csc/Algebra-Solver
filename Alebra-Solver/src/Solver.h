@@ -8,11 +8,11 @@ struct LinearForm {
 };
 
 template <typename... Ts>
-struct overloaded : Ts... {
+struct Overloaded : Ts... {
     using Ts::operator()...;
 };
 
 template <typename... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
+Overloaded(Ts...) -> Overloaded<Ts...>;
 
 double Solve(std::string_view equation);
