@@ -1,9 +1,7 @@
 #include "Tokenizer.h"
+#include "Parser.h"
 #include "Utils.h"
 #include <charconv>
-#include <unordered_map>
-
-static const std::unordered_map<std::string_view, TokenType> functions{};
 
 Tokenizer::Tokenizer(std::string_view src) : m_Src(src), m_Size(src.size()), m_Index(0) {}
 
@@ -23,14 +21,8 @@ std::vector<Token> Tokenizer::Tokenize() {
             while (m_Index < m_Size && IsAlnum(m_Src[m_Index])) {
                 m_Index++;
             }
-            std::string lexeme(m_Src.data() + start, m_Index - start);
 
-            auto it = functions.find(lexeme);
-            if (it != functions.end()) {
-                tokens.emplace_back(it->second);
-            } else {
-                tokens.emplace_back(lexeme);
-            }
+            tokens.emplace_back(std::string(m_Src.data() + start, m_Index - start));
             continue;
         } else if (IsDigit(c) || c == '.') {
             const size_t start = m_Index;

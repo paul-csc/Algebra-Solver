@@ -1,6 +1,7 @@
 #include "Solver.h"
 #include "Parser.h"
-#include <iostream>
+#include <cmath>
+#include <numbers>
 
 constexpr double EPS = 1e-12;
 
@@ -9,6 +10,14 @@ struct Polynomial { // Ax^2 + Bx + C
     double B = 0.0;
     double C = 0.0;
 };
+
+template <typename... Ts>
+struct Overloaded : Ts... {
+    using Ts::operator()...;
+};
+
+template <typename... Ts>
+Overloaded(Ts...) -> Overloaded<Ts...>;
 
 Polynomial operator+(const Polynomial& left, const Polynomial& right) {
     return { left.A + right.A, left.B + right.B, left.C + right.C };
@@ -37,13 +46,74 @@ Polynomial operator/(const Polynomial& left, const Polynomial& right) {
     return { left.A / right.C, left.B / right.C, left.C / right.C };
 }
 
+static constexpr double DegToRadians(double deg) {
+    return deg * std::numbers::pi / 180.0;
+}
+static constexpr double RadiansToDeg(double rad) {
+    return rad * 180.0 / std::numbers::pi;
+}
+
 static Polynomial AnalyzeAdditive(AdditiveExpression* expr);
 
 static Polynomial AnalyzePrimary(Primary* prim) {
     Polynomial result;
     std::visit(Overloaded{ [&](double value) { result = { 0.0, 0.0, value }; },
                    [&](std::string s) { result = { 0.0, 1.0, 0.0 }; },
-                   [&](AdditiveExpression* expr) { result = AnalyzeAdditive(expr); } },
+                   [&](AdditiveExpression* expr) { result = AnalyzeAdditive(expr); },
+                   [&](FunctionCall* fn) {
+                       result = AnalyzeAdditive(fn->Argument);
+
+                       if (result.A != 0 || result.B != 0) {
+                           Error("Variable expression in function");
+                       }
+
+                       double& n = result.C;
+                       switch (fn->Fn) {
+                           case FunctionType::Sin: n = std::sin(DegToRadians(n)); break;
+                           case FunctionType::Cos: n = std::cos(DegToRadians(n)); break;
+                           case FunctionType::Tan:
+                               if (std::abs(std::cos(DegToRadians(n))) < EPS) {
+                                   Error("Tan undefined (cos(x) = 0)");
+                               }
+                               n = std::tan(DegToRadians(n));
+                               break;
+                           case FunctionType::Asin:
+                               if (n < -1.0 || n > 1.0) {
+                                   Error("Asin domain is [-1, 1]");
+                               }
+                               n = RadiansToDeg(std::asin(n));
+                               break;
+                           case FunctionType::Acos:
+                               if (n < -1.0 || n > 1.0) {
+                                   Error("Acos domain is [-1, 1]");
+                               }
+                               n = RadiansToDeg(std::acos(n));
+                               break;
+                           case FunctionType::Atan: n = RadiansToDeg(std::atan(n)); break;
+                           case FunctionType::Log:
+                               if (n <= 0) {
+                                   Error("Logarithm of non-positive number");
+                               }
+                               n = std::log10(n);
+                               break;
+                           case FunctionType::Ln:
+                               if (n <= 0) {
+                                   Error("Logarithm of non-positive number");
+                               }
+                               n = std::log(n);
+                               break;
+                           case FunctionType::Sqrt:
+                               if (n < 0) {
+                                   Error("Square root of negative number");
+                               }
+                               n = std::sqrt(n);
+                               break;
+                           case FunctionType::Floor: n = std::floor(n); break;
+                           case FunctionType::Ceil: n = std::ceil(n); break;
+                           case FunctionType::Abs: n = std::abs(n); break;
+                           default: Error("Unknown function");
+                       }
+                   } },
         prim->Value);
     return result;
 }

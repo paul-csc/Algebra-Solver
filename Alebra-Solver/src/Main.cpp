@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main() {
-    const std::string_view equation = "x = -2x + 1";
+    const std::string_view equation = "x = asin(1)";
     const auto solutions = Solve(equation);
 
     if (solutions.IsNone) {
@@ -14,7 +14,7 @@ int main() {
             std::cout << solution << "\n";
         }
     }
-
+    
     std::cin.get();
     return 0;
 }

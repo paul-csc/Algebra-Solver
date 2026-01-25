@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <unordered_map>
 
 Parser::Parser(const std::vector<Token>& tokens)
     : m_Tokens(tokens), m_Index(0), m_Allocator(2 * 1024 * 1024), m_Variable(" ") {}
@@ -11,21 +12,49 @@ Equation* Parser::ParseEquation() {
     return m_Allocator.alloc<Equation>(lhs, rhs);
 }
 
+static const std::unordered_map<std::string_view, FunctionType> FunctionTable{
+    {   "sin",   FunctionType::Sin },
+    {   "cos",   FunctionType::Cos },
+    {   "tan",   FunctionType::Tan },
+    {  "asin",  FunctionType::Asin },
+    {  "acos",  FunctionType::Acos },
+    {  "atan",  FunctionType::Atan },
+    {   "log",   FunctionType::Log },
+    {    "ln",    FunctionType::Ln },
+    {  "sqrt",  FunctionType::Sqrt },
+    { "floor", FunctionType::Floor },
+    {  "ceil",  FunctionType::Ceil },
+    {   "abs",   FunctionType::Abs },
+};
+
 Primary* Parser::ParsePrimary() {
     if (Match(TokenType::END_OF_FILE)) {
         Error("Expected primary");
     } else if (Match(TokenType::NUMBER)) {
         return m_Allocator.alloc<Primary>(std::get<double>(Consume().Value));
     } else if (Match(TokenType::IDENTIFIER)) {
-        std::string var = std::get<std::string>(Consume().Value);
-        if (m_Variable == " ") {
-            m_Variable = var;
-            return m_Allocator.alloc<Primary>(var);
-        } else if (m_Variable == var) {
-            return m_Allocator.alloc<Primary>(var);
-        } else {
-            Error("More than 1 variable");
+        std::string ident = std::get<std::string>(Consume().Value);
+
+        if (Match(TokenType::LPAREN)) {
+            Consume();
+            AdditiveExpression* expr = ParseAdditiveExpression();
+            Expect(TokenType::RPAREN);
+
+            auto it = FunctionTable.find(ident);
+            if (it != FunctionTable.end()) {
+                return m_Allocator.alloc<Primary>(m_Allocator.alloc<FunctionCall>(it->second, expr));
+            } else {
+                Error("No function named " + ident);
+            }
         }
+
+        if (m_Variable == " ") {
+            m_Variable = ident;
+            return m_Allocator.alloc<Primary>(ident);
+        } else if (m_Variable == ident) {
+            return m_Allocator.alloc<Primary>(ident);
+        }
+        Error("More than 1 variable");
     } else if (Match(TokenType::LPAREN)) {
         Consume();
         AdditiveExpression* expr = ParseAdditiveExpression();
@@ -34,7 +63,6 @@ Primary* Parser::ParsePrimary() {
     }
 
     Error("Unexpected token in primary");
-    return nullptr; // never reached
 }
 
 UnaryExpression* Parser::ParseUnaryExpression() {

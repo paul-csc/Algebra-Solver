@@ -14,14 +14,17 @@ enum class BinaryOp {
     Pow = TokenType::CARET,
 };
 enum class UnaryOp { None = -1, Neg = TokenType::MINUS };
+enum class FunctionType { Sin, Cos, Tan, Asin, Acos, Atan, Log, Ln, Sqrt, Floor, Ceil, Abs };
 
 struct AdditiveExpression;
+struct FunctionCall;
 
 struct Primary {
     explicit Primary(double d) : Value(d) {}
     explicit Primary(const std::string& s) : Value(s) {}
     explicit Primary(AdditiveExpression* e) : Value(e) {}
-    std::variant<double, std::string, AdditiveExpression*> Value;
+    explicit Primary(FunctionCall* f) : Value(f) {}
+    std::variant<double, std::string, AdditiveExpression*, FunctionCall*> Value;
 };
 struct UnaryExpression {
     UnaryExpression(UnaryOp o, Primary* p) : Op(o), Expr(p) {}
@@ -43,6 +46,11 @@ struct AdditiveExpression {
     explicit AdditiveExpression(MultiplicativeExpression* e) : Left(e) {}
     MultiplicativeExpression* Left;
     std::vector<std::pair<BinaryOp, MultiplicativeExpression*>> Right;
+};
+struct FunctionCall {
+    FunctionCall(FunctionType t, AdditiveExpression* expr) : Fn(t), Argument(expr) {}
+    FunctionType Fn;
+    AdditiveExpression* Argument;
 };
 struct Equation {
     Equation(AdditiveExpression* l, AdditiveExpression* r) : Lhs(l), Rhs(r) {}

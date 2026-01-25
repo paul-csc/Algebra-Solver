@@ -15,13 +15,15 @@ enum class TokenType {
     LPAREN,
     RPAREN,
     EQUAL,
-    END_OF_FILE
+    END_OF_FILE,
+
+    TOKEN_TYPE_NB
 };
 
 struct Token {
-    Token(double num) : Type(TokenType::NUMBER), Value(num) {}
-    Token(const std::string& s) : Type(TokenType::IDENTIFIER), Value(s) {}
-    Token(TokenType type) : Type(type), Value(std::monostate{}) {}
+    explicit Token(double num) : Type(TokenType::NUMBER), Value(num) {}
+    explicit Token(const std::string& s) : Type(TokenType::IDENTIFIER), Value(s) {}
+    explicit Token(TokenType type) : Type(type), Value(std::monostate{}) {}
 
     TokenType Type;
     std::variant<std::monostate, double, std::string> Value;
