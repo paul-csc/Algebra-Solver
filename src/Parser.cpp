@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <numbers>
 #include <unordered_map>
 
 Parser::Parser(const std::vector<Token>& tokens)
@@ -27,6 +28,12 @@ static const std::unordered_map<std::string_view, FunctionType> FunctionTable{
     {   "abs",   FunctionType::Abs },
 };
 
+static const std::unordered_map<std::string_view, double> ConstantTable{
+    {  "pi",  std::numbers::pi },
+    {   "e",   std::numbers::e },
+    { "phi", std::numbers::phi },
+};
+
 Primary* Parser::ParsePrimary() {
     if (Match(TokenType::END_OF_FILE)) {
         Error("Expected primary");
@@ -46,6 +53,11 @@ Primary* Parser::ParsePrimary() {
             } else {
                 Error("No function named " + ident);
             }
+        }
+
+        auto it = ConstantTable.find(ident);
+        if (it != ConstantTable.end()) {
+            return m_Allocator.alloc<Primary>(it->second);
         }
 
         if (m_Variable == " ") {

@@ -2,9 +2,6 @@
 
 #include "Tokenizer.h"
 #include "Utils.h"
-#include <string>
-#include <variant>
-#include <vector>
 
 enum class BinaryOp {
     Add = TokenType::PLUS,
