@@ -58,7 +58,7 @@ static Polynomial AnalyzeAdditive(AdditiveExpression* expr);
 static Polynomial AnalyzePrimary(Primary* prim) {
     Polynomial result;
     std::visit(Overloaded{ [&](double value) { result = { 0.0, 0.0, value }; },
-                   [&](std::string s) { result = { 0.0, 1.0, 0.0 }; },
+                   [&](std::string) { result = { 0.0, 1.0, 0.0 }; },
                    [&](AdditiveExpression* expr) { result = AnalyzeAdditive(expr); },
                    [&](FunctionCall* fn) {
                        result = AnalyzeAdditive(fn->Argument);

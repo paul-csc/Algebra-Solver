@@ -1,5 +1,4 @@
-bin/
-bin-int/
+build/
 .vs/
 *.exe
 *.o
