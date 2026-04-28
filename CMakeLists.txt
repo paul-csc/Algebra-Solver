@@ -6,16 +6,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(SOURCES
-    src/Main.cpp
-    src/Parser.cpp
-    src/Solver.cpp
-    src/Tokenizer.cpp
-    src/Utils.cpp
+    src/main.cpp
+    src/parser.cpp
+    src/solver.cpp
+    src/tokenizer.cpp
+    src/utils.cpp
 
-    src/Parser.h
-    src/Solver.h
-    src/Tokenizer.h
-    src/Utils.h
+    src/parser.h
+    src/solver.h
+    src/tokenizer.h
+    src/utils.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

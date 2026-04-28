@@ -1,5 +1,5 @@
-#include "Tokenizer.h"
-#include "Utils.h"
+#include "tokenizer.h"
+#include "utils.h"
 #include <charconv>
 
 Tokenizer::Tokenizer(std::string_view src) : m_Src(src), m_Size(src.size()), m_Index(0) {}

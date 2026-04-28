@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Tokenizer.h"
-#include "Utils.h"
+#include "tokenizer.h"
+#include "utils.h"
 
 enum class BinaryOp {
-    Add = TokenType::PLUS,
-    Sub = TokenType::MINUS,
-    Mul = TokenType::STAR,
-    Div = TokenType::FSLASH,
-    Pow = TokenType::CARET,
+    Add = (int)TokenType::PLUS,
+    Sub = (int)TokenType::MINUS,
+    Mul = (int)TokenType::STAR,
+    Div = (int)TokenType::FSLASH,
+    Pow = (int)TokenType::CARET,
 };
-enum class UnaryOp { None = -1, Neg = TokenType::MINUS };
+enum class UnaryOp { None = -1, Neg = (int)TokenType::MINUS };
 enum class FunctionType { Sin, Cos, Tan, Asin, Acos, Atan, Log, Ln, Sqrt, Floor, Ceil, Abs };
 
 struct AdditiveExpression;
@@ -30,7 +30,8 @@ struct UnaryExpression {
     std::variant<Primary*, UnaryExpression*> Expr;
 };
 struct PowerExpression {
-    explicit PowerExpression(UnaryExpression* u, PowerExpression* e = nullptr) : Base(u), Exponent(e) {}
+    explicit PowerExpression(UnaryExpression* u, PowerExpression* e = nullptr)
+        : Base(u), Exponent(e) {}
     UnaryExpression* Base;
     PowerExpression* Exponent;
 };

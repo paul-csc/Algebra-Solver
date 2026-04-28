@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "parser.h"
 #include <numbers>
 #include <unordered_map>
 
@@ -49,7 +49,8 @@ Primary* Parser::ParsePrimary() {
 
             auto it = FunctionTable.find(ident);
             if (it != FunctionTable.end()) {
-                return m_Allocator.alloc<Primary>(m_Allocator.alloc<FunctionCall>(it->second, expr));
+                return m_Allocator.alloc<Primary>(
+                    m_Allocator.alloc<FunctionCall>(it->second, expr));
             } else {
                 Error("No function named " + ident);
             }
@@ -105,8 +106,8 @@ MultiplicativeExpression* Parser::ParseMultiplicativeExpression() {
     PowerExpression* left = ParsePowerExpression();
     MultiplicativeExpression* expr = m_Allocator.alloc<MultiplicativeExpression>(left);
 
-    while (Match(
-        TokenType::STAR, TokenType::FSLASH, TokenType::NUMBER, TokenType::IDENTIFIER, TokenType::LPAREN)) {
+    while (Match(TokenType::STAR, TokenType::FSLASH, TokenType::NUMBER, TokenType::IDENTIFIER,
+        TokenType::LPAREN)) {
         BinaryOp op;
         if (Match(TokenType::STAR, TokenType::FSLASH)) {
             op = static_cast<BinaryOp>(Consume().Type);

@@ -1,5 +1,5 @@
-#include "Solver.h"
-#include "Parser.h"
+#include "solver.h"
+#include "parser.h"
 #include <cmath>
 #include <numbers>
 
